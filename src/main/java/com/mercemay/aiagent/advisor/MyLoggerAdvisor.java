@@ -1,9 +1,13 @@
 package com.mercemay.aiagent.advisor;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.ai.chat.client.advisor.api.*;
-import org.springframework.ai.chat.model.MessageAggregator;
+import org.springframework.ai.chat.client.ChatClientMessageAggregator;
+import org.springframework.ai.chat.client.ChatClientRequest;
+import org.springframework.ai.chat.client.ChatClientResponse;
+import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
+import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
+import org.springframework.ai.chat.client.advisor.api.StreamAdvisor;
+import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
 import reactor.core.publisher.Flux;
 
 
@@ -14,7 +18,6 @@ import reactor.core.publisher.Flux;
  */
 @Slf4j
 public class MyLoggerAdvisor implements CallAdvisor, StreamAdvisor {
-    @NotNull
     @Override
     public String getName() {
         return this.getClass().getSimpleName();
@@ -25,43 +28,32 @@ public class MyLoggerAdvisor implements CallAdvisor, StreamAdvisor {
         return 0;
     }
 
-    private AdvisedRequest before(AdvisedRequest request) {
-        log.info("Request: {}", request.userText());
-        return request;
-    }
-
-    private void observeAfter(AdvisedResponse advisedResponse) {
-        log.info("Response: {}", advisedResponse.response().getResult().getOutput().getText());
-    }
 
     @Override
     public String toString() {
         return this.getClass().getSimpleName();
     }
 
-    @NotNull
-    @Override
-    public AdvisedResponse aroundCall(@NotNull AdvisedRequest advisedRequest, CallAroundAdvisorChain chain) {
 
-        advisedRequest = before(advisedRequest);
-
-        AdvisedResponse advisedResponse = chain.nextAroundCall(advisedRequest);
-
-        observeAfter(advisedResponse);
-
-        return advisedResponse;
+    public ChatClientResponse adviseCall(ChatClientRequest chatClientRequest, CallAdvisorChain callAdvisorChain) {
+        this.logRequest(chatClientRequest);
+        ChatClientResponse chatClientResponse = callAdvisorChain.nextCall(chatClientRequest);
+        this.logResponse(chatClientResponse);
+        return chatClientResponse;
     }
 
-    @NotNull
-    @Override
-    public Flux<AdvisedResponse> aroundStream(@NotNull AdvisedRequest advisedRequest, StreamAroundAdvisorChain chain) {
-
-        advisedRequest = before(advisedRequest);
-
-        Flux<AdvisedResponse> advisedResponses = chain.nextAroundStream(advisedRequest);
-
-        return new MessageAggregator().aggregateAdvisedResponse(advisedResponses, this::observeAfter);
+    public Flux<ChatClientResponse> adviseStream(ChatClientRequest chatClientRequest, StreamAdvisorChain streamAdvisorChain) {
+        this.logRequest(chatClientRequest);
+        Flux<ChatClientResponse> chatClientResponses = streamAdvisorChain.nextStream(chatClientRequest);
+        return (new ChatClientMessageAggregator()).aggregateChatClientResponse(chatClientResponses, this::logResponse);
     }
 
+    protected void logRequest(ChatClientRequest request) {
+        log.debug("request: {}", request.prompt().getUserMessage().getText());
+    }
+
+    protected void logResponse(ChatClientResponse chatClientResponse) {
+        log.debug("response: {}", chatClientResponse.chatResponse().getResult().getOutput().getText());
+    }
 }
 

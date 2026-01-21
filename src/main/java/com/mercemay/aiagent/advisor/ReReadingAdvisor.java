@@ -1,9 +1,11 @@
 package com.mercemay.aiagent.advisor;
 
-import org.springframework.ai.chat.client.advisor.api.*;
-import reactor.core.publisher.Flux;
+import org.springframework.ai.chat.client.ChatClientRequest;
+import org.springframework.ai.chat.client.ChatClientResponse;
+import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
+import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
+import org.springframework.ai.chat.prompt.PromptTemplate;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -11,39 +13,31 @@ import java.util.Map;
  *
  * @author MerceMay
  */
-public class ReReadingAdvisor implements CallAroundAdvisor, StreamAroundAdvisor {
+public class ReReadingAdvisor implements BaseAdvisor {
 
-    private AdvisedRequest before(AdvisedRequest advisedRequest) {
-
-        Map<String, Object> advisedUserParams = new HashMap<>(advisedRequest.userParams());
-        advisedUserParams.put("re2_input_query", advisedRequest.userText());
-
-        return AdvisedRequest.from(advisedRequest)
-                .userText("""
+    @Override
+    public ChatClientRequest before(ChatClientRequest chatClientRequest, AdvisorChain advisorChain) {
+        String augmentedUserText = PromptTemplate.builder()
+                .template("""
                         {re2_input_query}
                         Read the question again: {re2_input_query}
                         """)
-                .userParams(advisedUserParams)
+                .variables(Map.of("re2_input_query", chatClientRequest.prompt().getUserMessage().getText()))
+                .build()
+                .render();
+
+        return chatClientRequest.mutate()
+                .prompt(chatClientRequest.prompt().augmentUserMessage(augmentedUserText))
                 .build();
     }
 
     @Override
-    public AdvisedResponse aroundCall(AdvisedRequest advisedRequest, CallAroundAdvisorChain chain) {
-        return chain.nextAroundCall(this.before(advisedRequest));
-    }
-
-    @Override
-    public Flux<AdvisedResponse> aroundStream(AdvisedRequest advisedRequest, StreamAroundAdvisorChain chain) {
-        return chain.nextAroundStream(this.before(advisedRequest));
+    public ChatClientResponse after(ChatClientResponse chatClientResponse, AdvisorChain advisorChain) {
+        return chatClientResponse;
     }
 
     @Override
     public int getOrder() {
         return 0;
-    }
-
-    @Override
-    public String getName() {
-        return this.getClass().getSimpleName();
     }
 }
