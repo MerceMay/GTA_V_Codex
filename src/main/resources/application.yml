@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: ai-agent
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      chat:
+        options:
+          model: qwen-plus
+    chat:
+      memory:
+        repository:
+          jdbc:
+            platform: postgresql
+            initialize-schema: always
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+
+# springdoc-openapi configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.mercemay.aiagent.controller
+
+# knife4j config
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
