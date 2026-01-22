@@ -1,12 +1,16 @@
 package com.mercemay.aiagent.app;
 
 import com.mercemay.aiagent.advisor.MyLoggerAdvisor;
+import com.mercemay.aiagent.rag.AppRagCustomAdvisorFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -19,6 +23,8 @@ import java.util.List;
 public class App {
     private final ChatClient chatClient;
     private final Resource systemPromptResource;
+    private final VectorStore vectorStore;
+    private final AppRagCustomAdvisorFactory appRagCustomAdvisorFactory;
 
     /**
      * Initialize the ChatClient with the specified ChatModel and system prompt.
@@ -27,8 +33,12 @@ public class App {
      */
     public App(ChatModel chatModel,
                ChatMemory chatMemory,
+               VectorStore vectorStore,
+               AppRagCustomAdvisorFactory appRagCustomAdvisorFactory,
                @Value("classpath:/prompts/system_prompt.st") Resource systemPrompt) {
         this.systemPromptResource = systemPrompt;
+        this.vectorStore = vectorStore;
+        this.appRagCustomAdvisorFactory = appRagCustomAdvisorFactory;
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(this.systemPromptResource)
                 .defaultAdvisors(
@@ -77,5 +87,22 @@ public class App {
                 .entity(GameRecommendation.class);
         log.info("gameRecommendation: {}", gameRecommendation);
         return gameRecommendation;
+    }
+
+    public String chatWithRAG(String message, String chatId) {
+        ChatResponse chatResponse = chatClient.prompt()
+                .user(message)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .advisors(
+                        QuestionAnswerAdvisor.builder(vectorStore)
+                                .searchRequest(SearchRequest.builder().topK(5).build())
+                                .build(),
+                        appRagCustomAdvisorFactory
+                        )
+                .call()
+                .chatResponse();
+        String responseText = chatResponse.getResult().getOutput().getText();
+        log.info("chatWithRAG responseText: {}", responseText);
+        return responseText;
     }
 }

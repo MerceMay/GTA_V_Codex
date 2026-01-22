@@ -13,7 +13,7 @@ public class AppTest {
     private App app;
 
     @Test
-    void testChat() {
+    void chat() {
         String chaId = UUID.randomUUID().toString();
 
         String message = "你好，我是MerceMay";
@@ -36,5 +36,14 @@ public class AppTest {
         String message = "你好，我是MerceMay，请你推荐几款游戏给我";
         App.GameRecommendation gameRecommendation = app.getGameRecommendation(message, chaId);
         Assertions.assertNotNull(gameRecommendation);
+    }
+
+    @Test
+    void chatWithRAG() {
+        String chaId = UUID.randomUUID().toString();
+
+        String message = "GTA5中The Big Score最佳选择是哪个？";
+        String response = app.chatWithRAG(message, chaId);
+        Assertions.assertNotNull(response);
     }
 }
