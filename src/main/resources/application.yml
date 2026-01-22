@@ -3,14 +3,14 @@ spring:
     name: ai-agent
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY}
-      base-url: https://api.siliconflow.cn
+      api-key: ${OPENAI_API_KEY:dummy}
+      base-url: ${OPENAI_BASE_URL:https://api.siliconflow.cn}
       chat:
         options:
-          model: Qwen/Qwen3-8B
+          model: ${OPENAI_CHAT_MODEL:Qwen/Qwen3-8B}
       embedding:
         options:
-          model: Qwen/Qwen3-Embedding-8B
+          model: ${OPENAI_EMBEDDING_MODEL:Qwen/Qwen3-Embedding-8B}
     chat:
       memory:
         repository:

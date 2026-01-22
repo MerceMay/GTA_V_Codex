@@ -18,3 +18,14 @@ services:
       - "org.springframework.boot.service-connection=redis"
     ports:
       - "6379:6379"
+
+  ollama:
+    container_name: ollama
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    volumes:
+      - ./volumes/ollama:/root/.ollama
