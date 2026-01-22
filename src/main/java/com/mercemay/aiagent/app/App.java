@@ -1,15 +1,13 @@
 package com.mercemay.aiagent.app;
 
-import com.mercemay.aiagent.advisor.MyLoggerAdvisor;
 import com.mercemay.aiagent.rag.AppRagCustomAdvisorFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -22,6 +20,7 @@ import java.util.List;
 @Component
 public class App {
     private final ChatClient chatClient;
+    private final ChatModel chatModel;
     private final Resource systemPromptResource;
     private final VectorStore vectorStore;
 
@@ -34,13 +33,15 @@ public class App {
                ChatMemory chatMemory,
                VectorStore vectorStore,
                @Value("classpath:/prompts/system_prompt.st") Resource systemPrompt) {
+        this.chatModel = chatModel;
         this.systemPromptResource = systemPrompt;
         this.vectorStore = vectorStore;
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(this.systemPromptResource)
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build(), // Chat memory advisor
-                        new MyLoggerAdvisor() // Logging advisor
+                        new SimpleLoggerAdvisor()
+                        // new MyLoggerAdvisor() // Logging advisor
                         // , new ReReadingAdvisor() // Re-reading advisor
                 )
                 .build();
@@ -86,15 +87,22 @@ public class App {
         return gameRecommendation;
     }
 
+    /**
+     * Chat with RAG (Retrieval Augmented Generation) support.
+     * First classifies the user's question to determine the appropriate document tag,
+     * then uses that tag to filter relevant documents for the response.
+     *
+     * @param message The user's message
+     * @param chatId  The chat conversation ID
+     * @return The AI model's response augmented with relevant document content
+     */
     public String chatWithRAG(String message, String chatId) {
+        // Step 2: Use the classified tag to filter documents and generate response
         ChatResponse chatResponse = chatClient.prompt()
                 .user(message)
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .advisors(
-                        QuestionAnswerAdvisor.builder(vectorStore)
-                                .searchRequest(SearchRequest.builder().topK(5).build())
-                                .build(),
-                        AppRagCustomAdvisorFactory.createAppRagCustomAdvisor(vectorStore, )
+                        AppRagCustomAdvisorFactory.createAppRagCustomAdvisor(vectorStore)
                 )
                 .call()
                 .chatResponse();
@@ -103,5 +111,4 @@ public class App {
         return responseText;
     }
 
-    private
 }
