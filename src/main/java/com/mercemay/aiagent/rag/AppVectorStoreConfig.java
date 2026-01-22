@@ -24,7 +24,7 @@ public class AppVectorStoreConfig {
     public SmartInitializingSingleton databaseInitializer(VectorStore vectorStore) {
         return () -> {
             Boolean alreadyInitialized = stringRedisTemplate.hasKey("app:vector:initialized");
-            if (Boolean.FALSE.equals(alreadyInitialized)) {
+            if (!Boolean.TRUE.equals(alreadyInitialized)) {
                 List<Document> documents = appDocumentLoader.loadDocuments();
                 if (documents != null && !documents.isEmpty()) {
                     vectorStore.add(documents);
