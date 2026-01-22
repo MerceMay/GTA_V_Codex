@@ -3,14 +3,14 @@ spring:
     name: ai-agent
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY}
-      base-url: https://api.siliconflow.cn
+      api-key: ollama
+      base-url: http://localhost:11434
       chat:
         options:
-          model: Qwen/Qwen3-8B
+          model: qwen3:8b
       embedding:
         options:
-          model: Qwen/Qwen3-Embedding-8B
+          model: qwen3-embedding:0.6b # dimensions: 1024
     chat:
       memory:
         repository:
@@ -18,19 +18,15 @@ spring:
             platform: postgresql
             initialize-schema: always
     vectorstore:
-      redis:
+      pgvector:
+        dimensions: 1024
         initialize-schema: true
-        prefix: "vectorstore:" # Prefix for Redis keys
-        index-name: "vector_index" # Name of the RediSearch index
+        distance-type: cosine_distance
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/postgres?ssl=false
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
-  data:
-    redis:
-      host: localhost
-      port: 6379
 server:
   port: 8080
   servlet:

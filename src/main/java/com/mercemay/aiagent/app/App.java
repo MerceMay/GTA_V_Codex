@@ -1,10 +1,10 @@
 package com.mercemay.aiagent.app;
 
+import com.mercemay.aiagent.advisor.MyLoggerAdvisor;
 import com.mercemay.aiagent.rag.AppRagCustomAdvisorFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -20,7 +20,6 @@ import java.util.List;
 @Component
 public class App {
     private final ChatClient chatClient;
-    private final ChatModel chatModel;
     private final Resource systemPromptResource;
     private final VectorStore vectorStore;
 
@@ -33,15 +32,13 @@ public class App {
                ChatMemory chatMemory,
                VectorStore vectorStore,
                @Value("classpath:/prompts/system_prompt.st") Resource systemPrompt) {
-        this.chatModel = chatModel;
         this.systemPromptResource = systemPrompt;
         this.vectorStore = vectorStore;
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(this.systemPromptResource)
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build(), // Chat memory advisor
-                        new SimpleLoggerAdvisor()
-                        // new MyLoggerAdvisor() // Logging advisor
+                        new MyLoggerAdvisor() // Logging advisor
                         // , new ReReadingAdvisor() // Re-reading advisor
                 )
                 .build();
@@ -97,7 +94,6 @@ public class App {
      * @return The AI model's response augmented with relevant document content
      */
     public String chatWithRAG(String message, String chatId) {
-        // Step 2: Use the classified tag to filter documents and generate response
         ChatResponse chatResponse = chatClient.prompt()
                 .user(message)
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
