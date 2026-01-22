@@ -76,4 +76,3 @@ public class AppDocumentLoader {
         return DOCUMENT_TAG_MAPPING.getOrDefault(filename, TagConstant.GENERAL);
     }
 }
-
