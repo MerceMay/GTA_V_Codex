@@ -1,5 +1,7 @@
 package com.mercemay.aiagent.model;
 
+import com.mercemay.aiagent.constant.AppConstant;
+
 /**
  * Structured output model for AI-based question classification.
  * Used by the LLM to extract the appropriate document tag
@@ -22,6 +24,6 @@ public record QuestionClassification(
      * @return A QuestionClassification with the general tag
      */
     public static QuestionClassification general(String reasoning) {
-        return new QuestionClassification("gta_v_general", 0.5, reasoning);
+        return new QuestionClassification(AppConstant.GtaV.GENERAL, 0.5, reasoning);
     }
 }

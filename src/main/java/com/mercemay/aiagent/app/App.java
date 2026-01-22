@@ -111,8 +111,8 @@ public class App {
                 User's question: %s
                 
                 Classify this question and return the most appropriate tag.
-                If the question doesn't clearly fit any specific category, use "gta_v_general".
-                """.formatted(GtaVTag.getTagDescriptions(), message);
+                If the question doesn't clearly fit any specific category, use "%s".
+                """.formatted(GtaVTag.getTagDescriptions(), message, AppConstant.GtaV.GENERAL);
 
         try {
             QuestionClassification classification = ChatClient.builder(chatModel)

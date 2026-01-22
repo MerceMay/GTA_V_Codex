@@ -17,12 +17,16 @@ package com.mercemay.aiagent.constant.tag;
  *     // ...
  * }
  * </pre>
+ *
+ * <p>Note: The GAME_ID field should be overridden in each implementation.
+ * The default value is provided only as a placeholder.
  */
 public interface GameTag {
 
     /**
      * The unique identifier for the game.
-     * Each game implementation should define its own GAME_ID.
+     * Each game implementation must define its own GAME_ID value.
+     * This default value serves as a placeholder and should never be used directly.
      */
-    String GAME_ID = "unknown";
+    String GAME_ID = "unspecified";
 }
