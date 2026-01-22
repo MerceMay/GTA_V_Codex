@@ -1,6 +1,6 @@
 package com.mercemay.aiagent.rag;
 
-import com.mercemay.aiagent.constant.TagConstant;
+import com.mercemay.aiagent.constant.AppConstant;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
@@ -12,14 +12,14 @@ public class AppRagCustomAdvisorFactory {
      * Create a custom Retrieval Augmentation Advisor.
      *
      * @param vectorStore Vector store to use
-     * @param tag         Tag to filter documents by (should be a TagConstant value)
+     * @param tag         Tag to filter documents by (should be a GtaVTag constant value)
      * @return Custom Retrieval Augmentation Advisor
      */
     public static Advisor createAppRagCustomAdvisor(VectorStore vectorStore, String tag) {
         Filter.Expression expression = new Filter.Expression(
                 Filter.ExpressionType.AND,
-                new Filter.Expression(Filter.ExpressionType.EQ, new Filter.Key(TagConstant.METADATA_KEY_STATUS), new Filter.Value(TagConstant.STATUS_ACTIVE)),
-                new Filter.Expression(Filter.ExpressionType.EQ, new Filter.Key(TagConstant.METADATA_KEY_TAG), new Filter.Value(tag))
+                new Filter.Expression(Filter.ExpressionType.EQ, new Filter.Key(AppConstant.Metadata.KEY_STATUS), new Filter.Value(AppConstant.Metadata.STATUS_ACTIVE)),
+                new Filter.Expression(Filter.ExpressionType.EQ, new Filter.Key(AppConstant.Metadata.KEY_TAG), new Filter.Value(tag))
         );
         VectorStoreDocumentRetriever documentRetriever = VectorStoreDocumentRetriever.builder()
                 .vectorStore(vectorStore)

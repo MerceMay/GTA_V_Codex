@@ -1,6 +1,9 @@
 package com.mercemay.aiagent.app;
 
 import com.mercemay.aiagent.advisor.MyLoggerAdvisor;
+import com.mercemay.aiagent.constant.AppConstant;
+import com.mercemay.aiagent.constant.tag.GtaVTag;
+import com.mercemay.aiagent.model.QuestionClassification;
 import com.mercemay.aiagent.rag.AppRagCustomAdvisorFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -22,6 +25,7 @@ import java.util.List;
 @Component
 public class App {
     private final ChatClient chatClient;
+    private final ChatModel chatModel;
     private final Resource systemPromptResource;
     private final VectorStore vectorStore;
     private final AppRagCustomAdvisorFactory appRagCustomAdvisorFactory;
@@ -36,6 +40,7 @@ public class App {
                VectorStore vectorStore,
                AppRagCustomAdvisorFactory appRagCustomAdvisorFactory,
                @Value("classpath:/prompts/system_prompt.st") Resource systemPrompt) {
+        this.chatModel = chatModel;
         this.systemPromptResource = systemPrompt;
         this.vectorStore = vectorStore;
         this.appRagCustomAdvisorFactory = appRagCustomAdvisorFactory;
@@ -89,7 +94,66 @@ public class App {
         return gameRecommendation;
     }
 
+    /**
+     * Classify a user's question to determine the appropriate document tag.
+     * Uses structured output to ensure consistent LLM response format.
+     *
+     * @param message The user's question to classify
+     * @return QuestionClassification containing the tag and reasoning
+     */
+    public QuestionClassification classifyQuestion(String message) {
+        String classificationPrompt = """
+                You are a question classifier for GTA V game content.
+                Analyze the user's question and determine which document category it belongs to.
+                
+                %s
+                
+                User's question: %s
+                
+                Classify this question and return the most appropriate tag.
+                If the question doesn't clearly fit any specific category, use "gta_v_general".
+                """.formatted(GtaVTag.getTagDescriptions(), message);
+
+        try {
+            QuestionClassification classification = ChatClient.builder(chatModel)
+                    .build()
+                    .prompt()
+                    .user(classificationPrompt)
+                    .call()
+                    .entity(QuestionClassification.class);
+            
+            log.info("Question classified - tag: {}, confidence: {}, reasoning: {}",
+                    classification.tag(), classification.confidence(), classification.reasoning());
+            
+            // Validate the tag is a known GTA V tag
+            if (!GtaVTag.getAllTagsWithGeneral().contains(classification.tag())) {
+                log.warn("LLM returned unknown tag '{}', falling back to general", classification.tag());
+                return QuestionClassification.general("Unknown tag returned, using fallback");
+            }
+            
+            return classification;
+        } catch (Exception e) {
+            log.error("Error classifying question: {}", e.getMessage(), e);
+            return QuestionClassification.general("Classification failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Chat with RAG (Retrieval Augmented Generation) support.
+     * First classifies the user's question to determine the appropriate document tag,
+     * then uses that tag to filter relevant documents for the response.
+     *
+     * @param message The user's message
+     * @param chatId  The chat conversation ID
+     * @return The AI model's response augmented with relevant document content
+     */
     public String chatWithRAG(String message, String chatId) {
+        // Step 1: Classify the question to get the appropriate tag
+        QuestionClassification classification = classifyQuestion(message);
+        String tag = classification.tag();
+        log.info("Using tag '{}' for RAG query (confidence: {})", tag, classification.confidence());
+
+        // Step 2: Use the classified tag to filter documents and generate response
         ChatResponse chatResponse = chatClient.prompt()
                 .user(message)
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
@@ -97,8 +161,8 @@ public class App {
                         QuestionAnswerAdvisor.builder(vectorStore)
                                 .searchRequest(SearchRequest.builder().topK(5).build())
                                 .build(),
-                        appRagCustomAdvisorFactory
-                        )
+                        AppRagCustomAdvisorFactory.createAppRagCustomAdvisor(vectorStore, tag)
+                )
                 .call()
                 .chatResponse();
         String responseText = chatResponse.getResult().getOutput().getText();
