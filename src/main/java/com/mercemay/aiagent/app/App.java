@@ -24,7 +24,6 @@ public class App {
     private final ChatClient chatClient;
     private final Resource systemPromptResource;
     private final VectorStore vectorStore;
-    private final AppRagCustomAdvisorFactory appRagCustomAdvisorFactory;
 
     /**
      * Initialize the ChatClient with the specified ChatModel and system prompt.
@@ -34,11 +33,9 @@ public class App {
     public App(ChatModel chatModel,
                ChatMemory chatMemory,
                VectorStore vectorStore,
-               AppRagCustomAdvisorFactory appRagCustomAdvisorFactory,
                @Value("classpath:/prompts/system_prompt.st") Resource systemPrompt) {
         this.systemPromptResource = systemPrompt;
         this.vectorStore = vectorStore;
-        this.appRagCustomAdvisorFactory = appRagCustomAdvisorFactory;
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(this.systemPromptResource)
                 .defaultAdvisors(
@@ -97,12 +94,14 @@ public class App {
                         QuestionAnswerAdvisor.builder(vectorStore)
                                 .searchRequest(SearchRequest.builder().topK(5).build())
                                 .build(),
-                        appRagCustomAdvisorFactory
-                        )
+                        AppRagCustomAdvisorFactory.createAppRagCustomAdvisor(vectorStore, )
+                )
                 .call()
                 .chatResponse();
         String responseText = chatResponse.getResult().getOutput().getText();
         log.info("chatWithRAG responseText: {}", responseText);
         return responseText;
     }
+
+    private
 }
