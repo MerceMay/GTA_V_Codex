@@ -2,75 +2,43 @@ package com.mercemay.aiagent.tools;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
+import com.mercemay.aiagent.manager.WorkspaceManager;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 
 import java.io.File;
-import java.util.UUID;
 
-public class FileOperationTool implements AutoCloseable {
-    private final String FILE_DIR;
+public class FileOperationTool {
+    private final WorkspaceManager workspaceManager;
 
-    public FileOperationTool() {
-        this.FILE_DIR = System.getProperty("java.io.tmpdir") + File.separator + "aiagent-" + UUID.randomUUID().toString();
-        try {
-            FileUtil.mkdir(FILE_DIR);
-            // register shutdown hook to clean up temporary directory
-            Runtime.getRuntime().addShutdownHook(new Thread(this::cleanup));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create temporary directory: " + FILE_DIR, e);
-        }
+    public FileOperationTool(WorkspaceManager workspaceManager) {
+        this.workspaceManager = workspaceManager;
     }
 
-    @Tool(description = "Reads the content of a file given its filename.")
-    public String readFile(@ToolParam(description = "The name of the file to read.") String filename) {
-        File targetFile = FileUtil.file(FILE_DIR, filename);
+    @Tool(description = "Reads the content of a file.")
+    public String readFile(@ToolParam(description = "filename") String filename) {
         try {
-            return FileUtil.readUtf8String(targetFile);
+            File file = workspaceManager.resolve(filename);
+            return file.exists() ? FileUtil.readUtf8String(file) : "Error: File does not exist.";
+        } catch (IllegalArgumentException e) {
+            return "Invalid filename: " + e.getMessage();
         } catch (IORuntimeException e) {
             return "Error reading file: " + e.getMessage();
         }
     }
 
-    @Tool(description = "Writes content to a file with the given filename.")
-    public String writeFile(@ToolParam(description = "The name of the file to write to") String filename,
-                            @ToolParam(description = "The content to write into the file") String content) {
-        File targetFile = FileUtil.file(FILE_DIR, filename);
+
+    @Tool(description = "Writes content to a file.")
+    public String writeFile(@ToolParam(description = "filename") String filename,
+                            @ToolParam(description = "content") String content) {
         try {
+            File targetFile = workspaceManager.resolve(filename);
             FileUtil.writeUtf8String(content, targetFile);
-            return "File written successfully to " + targetFile.getAbsolutePath();
+            return "Success: Content written to " + targetFile.getName();
+        } catch (IllegalArgumentException e) {
+            return "Invalid filename: " + e.getMessage();
         } catch (IORuntimeException e) {
-            return "Error writing file: " + e.getMessage();
+            return "Error writing to file: " + e.getMessage();
         }
-    }
-
-    /**
-     * Cleans up the temporary directory and its contents.
-     */
-    private void cleanup() {
-        try {
-            File dir = new File(FILE_DIR);
-            if (dir.exists()) {
-                FileUtil.del(dir);
-                System.out.println("Cleaned up temporary directory: " + FILE_DIR);
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to clean up temporary directory: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Closes the tool and performs cleanup.
-     */
-    @Override
-    public void close() {
-        cleanup();
-    }
-
-    /**
-     *  Gets the path of the temporary directory.
-     */
-    public String getTempDirectory() {
-        return FILE_DIR;
     }
 }
