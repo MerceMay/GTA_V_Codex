@@ -3,14 +3,18 @@ spring:
     name: ai-agent
   ai:
     openai:
-      api-key: ollama
-      base-url: http://localhost:11434
+      api-key: ${OPENAI_API_KEY}
       chat:
         options:
-          model: qwen3:8b
+          model: Qwen/Qwen3-8B
+        base-url: https://api.siliconflow.cn
+        completions-path: /v1/chat/completions
       embedding:
         options:
-          model: qwen3-embedding:0.6b # dimensions: 1024
+          model: qwen3-embedding:8b # dimensions: 4096
+        base-url: http://localhost:11434
+        embeddings-path: /v1/embeddings
+        api-key: ollama
     chat:
       memory:
         repository:
@@ -18,10 +22,15 @@ spring:
             platform: postgresql
             initialize-schema: always
     vectorstore:
-      pgvector:
-        dimensions: 1024
+      milvus:
+        client:
+          host: localhost
+          port: 19530
+        collection-name: ai_agent_collection
+        embedding-dimension: 4096
+        index-type: ivf_flat
+        metric-type: cosine
         initialize-schema: true
-        distance-type: cosine_distance
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres?ssl=false
     username: postgres

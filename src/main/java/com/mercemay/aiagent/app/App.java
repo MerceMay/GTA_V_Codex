@@ -1,6 +1,8 @@
 package com.mercemay.aiagent.app;
 
 import com.mercemay.aiagent.advisor.MyLoggerAdvisor;
+import com.mercemay.aiagent.rag.AppMultiQueryExpander;
+import com.mercemay.aiagent.rag.AppQueryRewriter;
 import com.mercemay.aiagent.rag.AppRagCustomAdvisorFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -22,6 +24,8 @@ public class App {
     private final ChatClient chatClient;
     private final Resource systemPromptResource;
     private final VectorStore vectorStore;
+    private final AppMultiQueryExpander appMultiQueryExpander;
+    private final AppQueryRewriter appQueryRewriter;
 
     /**
      * Initialize the ChatClient with the specified ChatModel and system prompt.
@@ -31,9 +35,13 @@ public class App {
     public App(ChatModel chatModel,
                ChatMemory chatMemory,
                VectorStore vectorStore,
+               AppMultiQueryExpander appMultiQueryExpander,
+               AppQueryRewriter appQueryRewriter,
                @Value("classpath:/prompts/system_prompt.st") Resource systemPrompt) {
         this.systemPromptResource = systemPrompt;
         this.vectorStore = vectorStore;
+        this.appMultiQueryExpander = appMultiQueryExpander;
+        this.appQueryRewriter = appQueryRewriter;
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(this.systemPromptResource)
                 .defaultAdvisors(
@@ -94,11 +102,12 @@ public class App {
      * @return The AI model's response augmented with relevant document content
      */
     public String chatWithRAG(String message, String chatId) {
+        String rewrittenMessage = appQueryRewriter.rewriteQuery(message);
         ChatResponse chatResponse = chatClient.prompt()
-                .user(message)
+                .user(rewrittenMessage)
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .advisors(
-                        AppRagCustomAdvisorFactory.createAppRagCustomAdvisor(vectorStore)
+                        AppRagCustomAdvisorFactory.createAppRagCustomAdvisor(vectorStore, appMultiQueryExpander)
                 )
                 .call()
                 .chatResponse();

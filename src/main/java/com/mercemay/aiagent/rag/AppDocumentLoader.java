@@ -28,7 +28,7 @@ public class AppDocumentLoader {
             Resource[] resources = resourcePatternResolver.getResources("classpath:/documents/*.md");
             for (Resource resource : resources) {
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
-                        .withHorizontalRuleCreateDocument(true) // Split on horizontal rules
+                        .withHorizontalRuleCreateDocument(false) // Do not create new documents on horizontal rules
                         .withIncludeCodeBlock(false) // Ignore code blocks
                         .withIncludeBlockquote(false) // Ignore blockquotes
                         .withAdditionalMetadata("status", "active") // Set status metadata

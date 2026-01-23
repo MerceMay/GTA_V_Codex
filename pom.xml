@@ -68,7 +68,7 @@
 
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-vector-store-pgvector</artifactId>
+            <artifactId>spring-ai-starter-vector-store-milvus</artifactId>
         </dependency>
 
         <dependency>
