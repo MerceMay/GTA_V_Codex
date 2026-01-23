@@ -34,6 +34,7 @@ public class AppRagCustomAdvisorFactory {
                                             .query(q.text())
                                             .topK(5) // Retrieve top 5 documents per expanded query
                                             .filterExpression(expression)
+                                            .similarityThreshold(0.75) // Similarity threshold
                                             .build())
                             .stream()
                     ).distinct() // Remove duplicate documents
@@ -42,6 +43,7 @@ public class AppRagCustomAdvisorFactory {
 
         return RetrievalAugmentationAdvisor.builder()
                 .documentRetriever(multiQueryRetriever)
+                .queryAugmenter(AppContextualQueryAugmenterFactory.createContextualQueryAugmenter())
                 .build();
     }
 }

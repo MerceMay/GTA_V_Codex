@@ -42,7 +42,7 @@ public class AppTest {
     void chatWithRAG() {
         String chaId = UUID.randomUUID().toString();
 
-        String message = "GTA V的主要剧情是什么？";
+        String message = "西红柿炒鸡蛋的做法是什么？";
         String response = app.chatWithRAG(message, chaId);
         Assertions.assertNotNull(response);
     }
