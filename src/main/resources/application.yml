@@ -59,3 +59,7 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+websearch:
+  api-key: ${SERPER_API_KEY}
+  search-url: https://google.serper.dev/search
