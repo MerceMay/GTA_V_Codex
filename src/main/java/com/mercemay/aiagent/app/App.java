@@ -10,11 +10,13 @@ import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -26,6 +28,7 @@ public class App {
     private final VectorStore vectorStore;
     private final AppMultiQueryExpander appMultiQueryExpander;
     private final AppQueryRewriter appQueryRewriter;
+    private final ToolCallback[] toolCallbacks;
 
     /**
      * Initialize the ChatClient with the specified ChatModel and system prompt.
@@ -37,11 +40,13 @@ public class App {
                VectorStore vectorStore,
                AppMultiQueryExpander appMultiQueryExpander,
                AppQueryRewriter appQueryRewriter,
+               ToolCallback[] toolCallbacks,
                @Value("classpath:/prompts/system_prompt.st") Resource systemPrompt) {
         this.systemPromptResource = systemPrompt;
         this.vectorStore = vectorStore;
         this.appMultiQueryExpander = appMultiQueryExpander;
         this.appQueryRewriter = appQueryRewriter;
+        this.toolCallbacks = toolCallbacks;
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(this.systemPromptResource)
                 .defaultAdvisors(
@@ -93,7 +98,7 @@ public class App {
     }
 
     /**
-     * Chat with RAG (Retrieval Augmented Generation) support.
+     * Chat using RAG (Retrieval Augmented Generation).
      * First classifies the user's question to determine the appropriate document tag,
      * then uses that tag to filter relevant documents for the response.
      *
@@ -101,7 +106,7 @@ public class App {
      * @param chatId  The chat conversation ID
      * @return The AI model's response augmented with relevant document content
      */
-    public String chatWithRAG(String message, String chatId) {
+    public String chatUsingRAG(String message, String chatId) {
         String rewrittenMessage = appQueryRewriter.rewriteQuery(message);
         ChatResponse chatResponse = chatClient.prompt()
                 .user(rewrittenMessage)
@@ -112,8 +117,26 @@ public class App {
                 .call()
                 .chatResponse();
         String responseText = chatResponse.getResult().getOutput().getText();
-        log.info("chatWithRAG responseText: {}", responseText);
+        log.info("chatUsingRAG responseText: {}", responseText);
         return responseText;
     }
 
+    /**
+     * Chat using external tools.
+     *
+     * @param message The user's message
+     * @param chatId  The chat conversation ID
+     * @return The AI model's response using tools
+     */
+    public String chatUsingTools(String message, String chatId) {
+        ChatResponse chatResponse = chatClient.prompt()
+                .user(message)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .toolCallbacks(Arrays.stream(toolCallbacks).toList())
+                .call()
+                .chatResponse();
+        String responseText = chatResponse.getResult().getOutput().getText();
+        log.info("chatUsingTools responseText: {}", responseText);
+        return responseText;
+    }
 }

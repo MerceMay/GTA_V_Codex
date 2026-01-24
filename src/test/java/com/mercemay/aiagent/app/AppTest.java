@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @SpringBootTest
 public class AppTest {
@@ -39,11 +40,27 @@ public class AppTest {
     }
 
     @Test
-    void chatWithRAG() {
+    void chatUsingRAG() {
         String chaId = UUID.randomUUID().toString();
 
         String message = "西红柿炒鸡蛋的做法是什么？";
-        String response = app.chatWithRAG(message, chaId);
+        String response = app.chatUsingRAG(message, chaId);
         Assertions.assertNotNull(response);
+    }
+
+    @Test
+    void chatUsingTools() {
+        Consumer<String> chatWithTools = (String msg) -> {
+            String chatId = UUID.randomUUID().toString();
+            String response = app.chatUsingTools(msg, chatId);
+            System.out.println(response);
+            Assertions.assertNotNull(response);
+        };
+
+        chatWithTools.accept("请帮我创建一个名为test.txt的文件，并写入内容：Hello, World!");
+        chatWithTools.accept("请帮我下载这个链接的内容：https://placehold.co/600x400.png");
+        chatWithTools.accept("请帮我执行命令：echo Hello from terminal");
+        chatWithTools.accept("请帮我搜索Spring AI框架的最新消息");
+        chatWithTools.accept("请帮我爬取这个网站的内容：https://www.example.com");
     }
 }
