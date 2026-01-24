@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.SmartInitializingSingleton;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
@@ -22,7 +21,7 @@ public class AppVectorStoreConfig {
     @Resource
     private AppDocumentKeywordEnricher appDocumentKeywordEnricher;
 
-    @Bean
+    // @Bean
     public SmartInitializingSingleton databaseInitializer(VectorStore vectorStore) {
         return () -> {
             // step 1: Load documents

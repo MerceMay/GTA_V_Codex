@@ -43,7 +43,7 @@ public class AppTest {
     void chatUsingRAG() {
         String chaId = UUID.randomUUID().toString();
 
-        String message = "西红柿炒鸡蛋的做法是什么？";
+        String message = "GTA5的主角有哪些？";
         String response = app.chatUsingRAG(message, chaId);
         Assertions.assertNotNull(response);
     }

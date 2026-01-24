@@ -34,7 +34,7 @@ public class AppRagCustomAdvisorFactory {
                                             .query(q.text())
                                             .topK(5) // Retrieve top 5 documents per expanded query
                                             .filterExpression(expression)
-                                            .similarityThreshold(0.75) // Similarity threshold
+                                            .similarityThreshold(0.5) // Similarity threshold
                                             .build())
                             .stream()
                     ).distinct() // Remove duplicate documents
