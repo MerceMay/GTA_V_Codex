@@ -31,6 +31,21 @@ spring:
         index-type: ivf_flat
         metric-type: cosine
         initialize-schema: true
+    mcp:
+      client:
+        stdio:
+          connections:
+            google-maps:
+              command: docker
+              args:
+                - run
+                - -i
+                - --rm
+                - -e
+                - GOOGLE_MAPS_API_KEY
+                - mcp/google-maps
+              env:
+                GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres?ssl=false
     username: postgres
@@ -53,7 +68,6 @@ springdoc:
     - group: 'default'
       paths-to-match: '/**'
       packages-to-scan: com.mercemay.aiagent.controller
-
 # knife4j config
 knife4j:
   enable: true
@@ -63,3 +77,7 @@ knife4j:
 websearch:
   api-key: ${SERPER_API_KEY}
   search-url: https://google.serper.dev/search
+
+logging:
+  level:
+    org.springframework.ai: DEBUG

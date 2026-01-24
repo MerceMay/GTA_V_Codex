@@ -63,4 +63,12 @@ public class AppTest {
         chatWithTools.accept("请帮我搜索Spring AI框架的最新消息");
         chatWithTools.accept("请帮我爬取这个网站的内容：https://www.example.com");
     }
+
+    @Test
+    void chatUsingMCP() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "规划从华盛顿特区到洛杉矶的自驾游路线，途经国家公园，并推荐沿途的餐厅和住宿地点。";
+        String response = app.chatUsingMCP(message, chatId);
+        Assertions.assertNotNull(response);
+    }
 }

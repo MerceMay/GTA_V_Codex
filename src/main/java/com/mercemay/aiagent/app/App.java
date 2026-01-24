@@ -11,6 +11,7 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -29,6 +30,7 @@ public class App {
     private final AppMultiQueryExpander appMultiQueryExpander;
     private final AppQueryRewriter appQueryRewriter;
     private final ToolCallback[] toolCallbacks;
+    private final ToolCallbackProvider toolCallbackProvider;
 
     /**
      * Initialize the ChatClient with the specified ChatModel and system prompt.
@@ -41,12 +43,14 @@ public class App {
                AppMultiQueryExpander appMultiQueryExpander,
                AppQueryRewriter appQueryRewriter,
                ToolCallback[] toolCallbacks,
+               ToolCallbackProvider toolCallbackProvider,
                @Value("classpath:/prompts/system_prompt.st") Resource systemPrompt) {
         this.systemPromptResource = systemPrompt;
         this.vectorStore = vectorStore;
         this.appMultiQueryExpander = appMultiQueryExpander;
         this.appQueryRewriter = appQueryRewriter;
         this.toolCallbacks = toolCallbacks;
+        this.toolCallbackProvider = toolCallbackProvider;
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(this.systemPromptResource)
                 .defaultAdvisors(
@@ -137,6 +141,25 @@ public class App {
                 .chatResponse();
         String responseText = chatResponse.getResult().getOutput().getText();
         log.info("chatUsingTools responseText: {}", responseText);
+        return responseText;
+    }
+
+    /**
+     * Chat using MCP (Model Context Protocol).
+     *
+     * @param message The user's message
+     * @param chatId  The chat conversation ID
+     * @return The AI model's response using MCP
+     */
+    public String chatUsingMCP(String message, String chatId) {
+        ChatResponse chatresponse = chatClient.prompt()
+                .user(message)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .toolCallbacks(toolCallbackProvider.getToolCallbacks())
+                .call()
+                .chatResponse();
+        String responseText = chatresponse.getResult().getOutput().getText();
+        log.info("chatUsingMCP responseText: {}", responseText);
         return responseText;
     }
 }
