@@ -1,0 +1,11 @@
+spring:
+  ai:
+    mcp:
+      server:
+        name: ai-agent-mcp-server-stdio
+        version: 1.0.0
+        type: sync
+        stdio: true
+  main:
+    web-application-type: none # Disable web server for stdio mode
+    banner-mode: off # Disable Spring banner for cleaner stdio output

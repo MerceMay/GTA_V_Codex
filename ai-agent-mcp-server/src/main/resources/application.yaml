@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: ai-agent-mcp-server
+  profiles:
+    active: sse
+
+server:
+  port: 8081
+
+pexels:
+  api-key: ${PEXELS_API_KEY}
+  search-url: https://api.pexels.com/v1/search

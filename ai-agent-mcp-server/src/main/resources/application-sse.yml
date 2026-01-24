@@ -1,0 +1,10 @@
+spring:
+  ai:
+    mcp:
+      server:
+        name: ai-agent-mcp-server-sse
+        version: 1.0.0
+        type: sync
+        stdio: false
+        sse-endpoint: /mcp/sse
+        sse-message-endpoint: /mcp/message
