@@ -67,7 +67,7 @@ public class AppTest {
     @Test
     void chatUsingMCP() {
         String chatId = UUID.randomUUID().toString();
-        String message = "规划从华盛顿特区到洛杉矶的自驾游路线，途经国家公园，并推荐沿途的餐厅和住宿地点。";
+        String message = "帮我搜索一些关于Grand Theft Auto V的图片资源";
         String response = app.chatUsingMCP(message, chatId);
         Assertions.assertNotNull(response);
     }

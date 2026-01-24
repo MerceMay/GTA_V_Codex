@@ -6,5 +6,5 @@ spring:
         version: 1.0.0
         type: sync
         stdio: false
-        sse-endpoint: /mcp/sse
+        sse-endpoint: /sse
         sse-message-endpoint: /mcp/message

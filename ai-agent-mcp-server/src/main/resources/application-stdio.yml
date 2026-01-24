@@ -9,3 +9,6 @@ spring:
   main:
     web-application-type: none # Disable web server for stdio mode
     banner-mode: off # Disable Spring banner for cleaner stdio output
+logging:
+  pattern:
+    console: # Disable log for cleaner stdio output

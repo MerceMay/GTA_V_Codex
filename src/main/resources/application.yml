@@ -33,6 +33,10 @@ spring:
         initialize-schema: true
     mcp:
       client:
+        sse:
+          connections:
+            search-images:
+              url: http://localhost:8081
         stdio:
           connections:
             google-maps:
