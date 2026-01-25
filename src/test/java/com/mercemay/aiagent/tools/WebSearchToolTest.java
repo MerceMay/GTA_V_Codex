@@ -20,7 +20,7 @@ class WebSearchToolTest {
     void testWebSearchRealCall() {
         WebSearchTool webSearchTool = new WebSearchTool(apiKey, searchUrl);
         String query = "Spring AI framework latest news";
-        String result = webSearchTool.webSearch(query);
+        String result = webSearchTool.webSearch(query, 1);
 
         System.out.println(result);
 

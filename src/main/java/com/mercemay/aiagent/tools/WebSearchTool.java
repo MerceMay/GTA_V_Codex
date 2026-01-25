@@ -22,11 +22,18 @@ public class WebSearchTool {
     }
 
     @Tool(description = "Use Google to search for real-time information, which is suitable for fact-checking, news inquiries or obtaining the latest knowledge.")
-    public String webSearch(@ToolParam(description = "The search query") String query) {
+    public String webSearch(
+            @ToolParam(description = "The search query") String query,
+            @ToolParam(description = "The page number of the search results, default is 1") Integer page) {
+
+        int pageNumber = (page == null || page <= 0) ? 1 : page;
+
         Map<String, Object> body = new HashMap<>();
         body.put("q", query);
+        body.put("page", pageNumber);
         body.put("gl", "us");
-        body.put("hl", "en-US");
+        body.put("hl", "en");
+
         try {
             String rawJson = HttpRequest.post(searchUrl)
                     .header("X-API-KEY", apiKey)
@@ -38,7 +45,7 @@ public class WebSearchTool {
             JSONObject jsonObject = JSONUtil.parseObj(rawJson);
             StringJoiner resultContext = new StringJoiner("\n\n");
 
-            // 1. Process Knowledge Graph
+            // 1. Process Knowledge Graph (Only appears on page 1 usually)
             if (jsonObject.containsKey("knowledgeGraph")) {
                 JSONObject kg = jsonObject.getJSONObject("knowledgeGraph");
                 StringBuilder kgText = new StringBuilder("Knowledge Graph:\n");
@@ -53,7 +60,7 @@ public class WebSearchTool {
             // 2. Process Organic Results
             if (jsonObject.containsKey("organic")) {
                 JSONArray organic = jsonObject.getJSONArray("organic");
-                for (int i = 0; i < Math.min(organic.size(), 5); i++) {
+                for (int i = 0; i < organic.size(); i++) {
                     JSONObject item = organic.getJSONObject(i);
                     String entry = String.format("Source [%d]: %s\nLink: %s\nSnippet: %s",
                             i + 1, item.getStr("title"), item.getStr("link"), item.getStr("snippet"));
@@ -73,7 +80,7 @@ public class WebSearchTool {
                 resultContext.add(paaText.toString());
             }
 
-            return resultContext.length() > 0 ? resultContext.toString() : "No relevant results found.";
+            return resultContext.length() > 0 ? resultContext.toString() : "No relevant results found for page " + pageNumber;
 
         } catch (Exception e) {
             return "Error during web search: " + e.getMessage();
