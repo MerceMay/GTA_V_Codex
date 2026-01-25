@@ -43,6 +43,11 @@ public abstract class BaseAgent {
     private int currentIteration = 0;
 
     /**
+     * The maximum number of consecutive identical outputs allowed before stopping.
+     */
+    private int maxConsecutiveLoops = 3;
+
+    /**
      * The ChatClient used for communication.
      */
     private ChatClient chatClient;
@@ -72,10 +77,28 @@ public abstract class BaseAgent {
         messageList.add(new UserMessage(userPrompt));
         // Initialize step output list
         List<String> stepOutputList = new ArrayList<>();
+        String lastStepOutput = null;
+        int consecutiveLoopCount = 0;
         try {
             for (currentIteration = 1; currentIteration <= maxIterations && this.state != AgentState.COMPLETED; currentIteration++) {
                 log.info("Agent '{}' - Iteration {}/{}", this.name, currentIteration, maxIterations);
                 String stepOutput = this.step();
+
+                // Loop detection
+                if (stepOutput != null && stepOutput.equals(lastStepOutput)) {
+                    consecutiveLoopCount++;
+                    if (consecutiveLoopCount >= maxConsecutiveLoops) {
+                        String loopMsg = String.format("Terminating due to consecutive identical output loop detection (%d times).", consecutiveLoopCount);
+                        log.warn(loopMsg);
+                        stepOutputList.add(loopMsg);
+                        this.state = AgentState.COMPLETED;
+                        break;
+                    }
+                } else {
+                    consecutiveLoopCount = 0;
+                }
+                lastStepOutput = stepOutput;
+
                 stepOutputList.add("Step " + currentIteration + " Output: " + stepOutput);
             }
             if (currentIteration > maxIterations) {
@@ -123,10 +146,28 @@ public abstract class BaseAgent {
             messageList.add(new UserMessage(userPrompt));
             // Initialize step output list
             List<String> stepOutputList = new ArrayList<>();
+            String lastStepOutput = null;
+            int consecutiveLoopCount = 0;
             try {
                 for (currentIteration = 1; currentIteration <= maxIterations && this.state != AgentState.COMPLETED; currentIteration++) {
                     log.info("Agent '{}' - Iteration {}/{}", this.name, currentIteration, maxIterations);
                     String stepOutput = this.step();
+
+                    // Loop detection
+                    if (stepOutput != null && stepOutput.equals(lastStepOutput)) {
+                        consecutiveLoopCount++;
+                        if (consecutiveLoopCount >= maxConsecutiveLoops) {
+                            String loopMsg = String.format("Terminating due to consecutive identical output loop detection (%d times).", consecutiveLoopCount);
+                            log.warn(loopMsg);
+                            sseEmitter.send(loopMsg);
+                            this.state = AgentState.COMPLETED;
+                            break;
+                        }
+                    } else {
+                        consecutiveLoopCount = 0;
+                    }
+                    lastStepOutput = stepOutput;
+
                     String outputMessage = "Step " + currentIteration + " Output: " + stepOutput;
                     stepOutputList.add(outputMessage);
                     sseEmitter.send(outputMessage);
