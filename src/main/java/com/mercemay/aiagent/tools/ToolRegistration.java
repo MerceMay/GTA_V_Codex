@@ -18,8 +18,10 @@ public class ToolRegistration {
     public ToolCallback[] toolCallbacks(WorkspaceManager workspaceManager) {
         return ToolCallbacks.from(
                 new FileOperationTool(workspaceManager),
+                new PdfGeneratorTool(workspaceManager),
                 new ResourceDownloadTool(workspaceManager),
                 new TerminalOperationTool(),
+                new TerminateAgentTool(),
                 new WebSearchTool(apiKey, searchUrl),
                 new WebCrawlerTool()
         );

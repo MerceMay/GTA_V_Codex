@@ -13,13 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PdfGeneratorToolTest {
 
     @Autowired
-    private PdfGeneratorTool pdfGeneratorTool;
-
-    @Autowired
     private WorkspaceManager workspaceManager;
 
     @Test
     void generatePdf() {
+        PdfGeneratorTool pdfGeneratorTool = new PdfGeneratorTool(workspaceManager);
+
         String filename = "integration_test.pdf";
         String content = "你好，这是一个PDF生成测试。";
 
