@@ -22,10 +22,24 @@ public class PdfGeneratorTool {
         this.workspaceManager = workspaceManager;
     }
 
-    @Tool(description = "Generate a PDF file supporting Chinese characters using iText 9.5.0.")
+    @Tool(description = """
+            Generates a PDF document with the provided text content.
+            
+            Features:
+            - Supports Chinese characters (SimSun, Microsoft YaHei, etc.).
+            - Uses iText 9.5.0 for generation.
+            
+            When to use:
+            - The user requests a PDF report, summary, or document.
+            - You need to save output in a portable document format.
+            
+            Input:
+            - filename: The desired output path (e.g., 'report.pdf').
+            - content: The plain text content to write into the PDF.
+            """)
     public String generatePdf(
-            @ToolParam(description = "The name of the PDF file") String filename,
-            @ToolParam(description = "The text content (supports Chinese)") String content) {
+            @ToolParam(description = "The output path for the PDF file (e.g., 'output/summary.pdf').") String filename,
+            @ToolParam(description = "The plain text content to be written into the PDF (supports Chinese).") String content) {
 
         if (!filename.toLowerCase().endsWith(".pdf")) {
             filename += ".pdf";

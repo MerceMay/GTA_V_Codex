@@ -11,8 +11,20 @@ import java.util.List;
 
 public class TerminalOperationTool {
 
-    @Tool(description = "Execute a terminal command and return the output.")
-    public String executeCommand(@ToolParam(description = "The terminal command to execute.") String command) {
+    @Tool(description = """
+            Executes a shell command on the host operating system.
+            
+            CRITICAL USAGE GUIDELINES:
+            - Use this tool to run system commands, build projects, run tests, or manage files via CLI.
+            - You are responsible for the SAFETY of the command.
+            - Detect the OS (Windows/Linux) and format commands accordingly (e.g., 'dir' vs 'ls').
+            - Do NOT run commands that require interactive user input (stdin is not supported).
+            - Do NOT run long-running processes (like starting a server) without a way to detach or timeout, as this tool waits for completion.
+            
+            Returns:
+            - Combined Standard Output (stdout) and Standard Error (stderr).
+            """)
+    public String executeCommand(@ToolParam(description = "The shell command to execute (e.g., 'mvn clean install').") String command) {
         StringBuilder output = new StringBuilder();
         String os = System.getProperty("os.name").toLowerCase();
 

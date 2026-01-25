@@ -21,10 +21,24 @@ public class WebSearchTool {
         this.searchUrl = searchUrl;
     }
 
-    @Tool(description = "Use Google to search for real-time information, which is suitable for fact-checking, news inquiries or obtaining the latest knowledge.")
+    @Tool(description = """
+            Performs a Google Search to find real-time information, news, or specific facts.
+            
+            When to use:
+            - You need information that is not in your internal knowledge base (current events, latest docs).
+            - The user asks a question requiring external verification.
+            
+            Capabilities:
+            - Returns organic search results (titles, snippets, links).
+            - May return Knowledge Graph data or 'People Also Ask' questions.
+            
+            Parameters:
+            - query: The search keywords.
+            - page: Result page number (default 1).
+            """)
     public String webSearch(
-            @ToolParam(description = "The search query") String query,
-            @ToolParam(description = "The page number of the search results, default is 1") Integer page) {
+            @ToolParam(description = "The search query keywords or question.") String query,
+            @ToolParam(description = "The page number of results to fetch (default is 1).") Integer page) {
 
         int pageNumber = (page == null || page <= 0) ? 1 : page;
 

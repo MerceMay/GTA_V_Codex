@@ -17,10 +17,20 @@ public class ResourceDownloadTool {
         this.workspaceManager = workspaceManager;
     }
 
-    @Tool(description = "Download a resource from a given URL and save it with the specified filename.")
+    @Tool(description = """
+            Downloads a file/resource from a public HTTP/HTTPS URL to the local workspace.
+            
+            When to use:
+            - You need to fetch external resources like images, PDFs, libraries, or datasets.
+            - The user provides a direct link to a file they want saved.
+            
+            Inputs:
+            - url: A valid HTTP/HTTPS URL.
+            - filename: The local destination path/name to save the file.
+            """)
     public String downloadResource(
-            @ToolParam(description = "The URL of the resource to download.") String url,
-            @ToolParam(description = "The filename to save the downloaded resource as.") String filename) {
+            @ToolParam(description = "The valid HTTP/HTTPS URL of the resource to download.") String url,
+            @ToolParam(description = "The local path/filename where the resource will be saved.") String filename) {
         if (StringUtil.isBlank(url) || !(url.startsWith("http://") || url.startsWith("https://"))) {
             return "Error: Invalid URL.";
         }
