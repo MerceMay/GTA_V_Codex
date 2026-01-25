@@ -8,10 +8,11 @@ public class AppContextualQueryAugmenterFactory {
     public static ContextualQueryAugmenter createContextualQueryAugmenter() {
         PromptTemplate emptyPromptTemplate = PromptTemplate.builder()
                 .template("""
-                        As an AI assistant specialized only in Grand Theft Auto V, notify the user that no relevant information was found in the official knowledge base.
-                        Explicitly state that you are prohibited from answering non-GTA V topics or using external knowledge.
+                        As an AI assistant specialized only in Grand Theft Auto V (GTA V), please notify the user that no relevant information was found in the official knowledge base.
+                        Explicitly state that you are prohibited from answering non-GTA V topics or using external knowledge (unless explicitly authorized).
+                        Please maintain a polite, professional, and enthusiastic tone.
                         """)
-                .build(); // 当上下文为空时，不添加任何内容
+                .build(); // When no context is found, use this prompt template.
         return ContextualQueryAugmenter.builder()
                 .allowEmptyContext(false)
                 .emptyContextPromptTemplate(emptyPromptTemplate)

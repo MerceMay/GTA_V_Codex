@@ -145,13 +145,6 @@
             <version>9.5.0</version>
             <scope>compile</scope>
         </dependency>
-
-        <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>typography</artifactId>
-            <version>9.5.0</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 
     <!-- 强烈推荐：引入 Spring AI BOM，一次性管理所有子模块版本 -->

@@ -16,7 +16,10 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,7 +28,7 @@ import java.util.List;
 @Component
 public class App {
     private final ChatClient chatClient;
-    private final Resource systemPromptResource;
+    private final String systemPromptContent;
     private final VectorStore vectorStore;
     private final AppMultiQueryExpander appMultiQueryExpander;
     private final AppQueryRewriter appQueryRewriter;
@@ -45,14 +48,18 @@ public class App {
                ToolCallback[] toolCallbacks,
                ToolCallbackProvider toolCallbackProvider,
                @Value("classpath:/prompts/system_prompt.st") Resource systemPrompt) {
-        this.systemPromptResource = systemPrompt;
+        try {
+            this.systemPromptContent = StreamUtils.copyToString(systemPrompt.getInputStream(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read system prompt", e);
+        }
         this.vectorStore = vectorStore;
         this.appMultiQueryExpander = appMultiQueryExpander;
         this.appQueryRewriter = appQueryRewriter;
         this.toolCallbacks = toolCallbacks;
         this.toolCallbackProvider = toolCallbackProvider;
         this.chatClient = ChatClient.builder(chatModel)
-                .defaultSystem(this.systemPromptResource)
+                .defaultSystem(this.systemPromptContent)
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build(), // Chat memory advisor
                         new MyLoggerAdvisor() // Logging advisor
@@ -92,7 +99,7 @@ public class App {
      */
     public GameRecommendation getGameRecommendation(String message, String chatId) {
         GameRecommendation gameRecommendation = chatClient.prompt()
-                .system(systemPromptResource + "每次对话后都要给出游戏推荐，标题为{用户名}的游戏推荐，内容为推荐的游戏列表。")
+                .system(systemPromptContent + " Always provide game recommendations after each conversation, titled '{username}'s Game Recommendations', containing a list of recommended games.")
                 .user(message)
                 .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .call()

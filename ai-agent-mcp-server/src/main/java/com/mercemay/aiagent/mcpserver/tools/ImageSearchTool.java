@@ -19,10 +19,25 @@ public class ImageSearchTool {
     @Value("${pexels.search-url}")
     private String searchUrl;
 
-    @Tool(description = "Search for images with given query, number of results per page, and page number")
-    public String searchImages(@ToolParam(description = "The search query for images") String query,
-                               @ToolParam(description = "The number of results to return") int perPage,
-                               @ToolParam(description = "The page number for pagination") int page) {
+    @Tool(description = """
+            Performs an image search using the Pexels API to find high-quality stock photos.
+            
+            When to use:
+            - The user asks for images, photos, or visual inspiration related to a specific topic.
+            - You need to display visual content to the user.
+            
+            Capabilities:
+            - Searches the Pexels library for royalty-free images.
+            - Returns a list of direct image URLs (medium size).
+            
+            Parameters:
+            - query: The search keywords describing the desired image.
+            - perPage: Number of results to return (default usually 1-10).
+            - page: Pagination offset.
+            """)
+    public String searchImages(@ToolParam(description = "The search query keywords for images (e.g., 'sunset', 'city skyline').") String query,
+                               @ToolParam(description = "The number of image results to return per page.") int perPage,
+                               @ToolParam(description = "The page number for pagination (starts at 1).") int page) {
         try {
             HttpResponse response = HttpRequest.get(searchUrl)
                     .header("Authorization", apiKey)
