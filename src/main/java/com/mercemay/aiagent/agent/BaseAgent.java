@@ -99,7 +99,7 @@ public abstract class BaseAgent {
                 }
                 lastStepOutput = stepOutput;
 
-                stepOutputList.add("Step " + currentIteration + " Output: " + stepOutput);
+                stepOutputList.add(stepOutput);
             }
             if (currentIteration > maxIterations) {
                 this.state = AgentState.COMPLETED;
@@ -168,9 +168,8 @@ public abstract class BaseAgent {
                     }
                     lastStepOutput = stepOutput;
 
-                    String outputMessage = "Step " + currentIteration + " Output: " + stepOutput;
-                    stepOutputList.add(outputMessage);
-                    sseEmitter.send(outputMessage);
+                    stepOutputList.add(stepOutput);
+                    sseEmitter.send(stepOutput);
                 }
                 if (currentIteration > maxIterations) {
                     this.state = AgentState.COMPLETED;

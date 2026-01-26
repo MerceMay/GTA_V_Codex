@@ -1,0 +1,36 @@
+:root {
+  --gta-green: #2e8b57; /* SeaGreen as a placeholder for GTA cash green */
+  --gta-bg: #f0f0f0;
+  --gta-dark: #222;
+  --gta-white: #fff;
+  --chat-bg: #e5ddd5;
+  --user-msg-bg: #dcf8c6;
+  --ai-msg-bg: #fff;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--gta-bg);
+  color: var(--gta-dark);
+}
+
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.markdown-body pre {
+  background-color: #f6f8fa;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.markdown-body code {
+  font-family: monospace;
+  background-color: rgba(27,31,35,0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+}

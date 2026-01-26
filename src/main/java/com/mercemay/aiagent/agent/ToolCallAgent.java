@@ -135,4 +135,39 @@ public class ToolCallAgent extends ReActAgent {
         log.info("Agent {}'s action results: \n{}", getName(), results);
         return results;
     }
-}
+
+        @Override
+        public String step() {
+            try {
+                boolean shouldAct = think();
+                
+                            // Retrieve the text content (Thought) from the LLM response
+                            String thought = "";
+                            if (this.toolCallChatResponse != null && this.toolCallChatResponse.getResult() != null) {
+                                thought = this.toolCallChatResponse.getResult().getOutput().getText();
+                            }
+                
+                            // Clean up formatting: remove "Thought:" and "Action:" markers
+                            if (StrUtil.isNotBlank(thought)) {
+                                // Remove "Thought:" header
+                                thought = thought.replaceAll("(?i)^Thought:\\s*", "");
+                                // Remove trailing "Action:" marker (and any empty lines before it)
+                                thought = thought.replaceAll("(?i)\\n+\\s*Action:\\s*$", "");
+                                thought = thought.trim();
+                            }
+                
+                            if (!shouldAct) {                    // Final Answer case.
+                    return StrUtil.isBlank(thought) ? "Thinking Finished." : thought;
+                }
+    
+                // Action case. Execute the action to update history/state, but ignore the return string.
+                act();
+    
+                // Return ONLY the thought
+                return thought;
+    
+            } catch (Exception e) {
+                log.error("Error during agent step", e);
+                return "Error during agent step: " + e.getMessage();
+            }
+        }}
