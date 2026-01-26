@@ -123,7 +123,7 @@ public abstract class BaseAgent {
      * @return An SseEmitter that streams the agent's responses as they are generated.
      */
     public SseEmitter runStream(String userPrompt) {
-        SseEmitter sseEmitter = new SseEmitter(5 * 60 * 1000L); // 5 minutes timeout
+        SseEmitter sseEmitter = new SseEmitter(10 * 60 * 1000L); // 10 minutes timeout
         // Start asynchronous execution
         CompletableFuture.runAsync(() -> {
             try {

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -85,6 +86,21 @@ public class App {
         String responseText = chatResponse.getResult().getOutput().getText();
         log.info("responseText: {}", responseText);
         return responseText;
+    }
+
+    /**
+     * Stream chat responses from the AI model.
+     *
+     * @param message The user's message
+     * @param chatId  The chat conversation ID
+     * @return A Flux stream of the AI model's response content
+     */
+    public Flux<String> chatStream(String message, String chatId) {
+        return chatClient.prompt()
+                .user(message)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId)) // Specify conversation ID in current chat
+                .stream()
+                .content();
     }
 
     record GameRecommendation(String title, List<String> recommendations) {

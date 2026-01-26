@@ -6,7 +6,7 @@ spring:
       api-key: ${OPENAI_API_KEY}
       chat:
         options:
-          model: Qwen/Qwen3-8B
+          model: deepseek-ai/DeepSeek-V3.2
         base-url: https://api.siliconflow.cn
         completions-path: /v1/chat/completions
       embedding:
@@ -59,6 +59,10 @@ server:
   port: 8080
   servlet:
     context-path: /api
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
 
 # springdoc-openapi configuration
 springdoc:
