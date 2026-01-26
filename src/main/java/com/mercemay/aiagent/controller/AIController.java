@@ -76,7 +76,7 @@ public class AIController {
      * @param chatId  The chat conversation ID
      * @return An SseEmitter for streaming the AI model's responses
      */
-    @GetMapping("/chat/sse/sse/emitter")
+    @GetMapping("/chat/sse/emitter")
     public SseEmitter chatSseEmitter(String message, String chatId) {
         SseEmitter emitter = new SseEmitter(5 * 60 * 1000L); // 5 minutes timeout
         app.chatStream(message, chatId)
