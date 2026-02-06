@@ -202,12 +202,12 @@ AIAgent (GTA V 专家 Agent，注册 7 种工具 + MCP 动态工具)
 
 #### 4.1 流式响应 (Streaming)
 
-项目实现了 **4 种** 流式响应模式，从多维度解决 LLM 响应延迟问题：
+项目实现了 **5 种** 流式响应端点，从多维度解决 LLM 响应延迟问题：
 
 | 端点 | 技术方案 | 适用场景 |
 |------|----------|----------|
 | `GET /ai/chat/sse` | `Flux<String>` + `text/event-stream` | 标准 SSE 流式响应 |
-| `GET /ai/chat/sse/generic` | `Flux<ServerSentEvent<String>>` | 结构化 SSE，支持 event id/type |
+| `GET /ai/chat/sse/generic` | `Flux<ServerSentEvent<String>>` | 结构化 SSE，支持 event ID/type |
 | `GET /ai/chat/sse/emitter` | `SseEmitter` (5 分钟超时) | Servlet 兼容的推送方案 |
 | `GET /ai/chat/agent` | `SseEmitter` (10 分钟超时) + `CompletableFuture.runAsync` | Agent 异步流式输出 |
 | `GET /ai/chat/rag/sse` | `Flux<String>` + `text/event-stream` | RAG 流式检索增强响应 |
