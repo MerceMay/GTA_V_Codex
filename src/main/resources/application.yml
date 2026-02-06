@@ -82,6 +82,9 @@ knife4j:
   setting:
     language: zh_cn
 
+rag:
+  initialize-vector-store: false
+
 websearch:
   api-key: ${SERPER_API_KEY}
   search-url: https://google.serper.dev/search

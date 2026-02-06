@@ -126,8 +126,8 @@ public class App {
 
     /**
      * Chat using RAG (Retrieval Augmented Generation).
-     * First classifies the user's question to determine the appropriate document tag,
-     * then uses that tag to filter relevant documents for the response.
+     * First rewrites the user's query for better retrieval accuracy,
+     * then uses multi-query expansion and vector similarity search to find relevant documents.
      *
      * @param message The user's message
      * @param chatId  The chat conversation ID
@@ -146,6 +146,27 @@ public class App {
         String responseText = chatResponse.getResult().getOutput().getText();
         log.info("chatUsingRAG responseText: {}", responseText);
         return responseText;
+    }
+
+    /**
+     * Stream chat responses using RAG (Retrieval Augmented Generation).
+     * Combines query rewriting with multi-query expansion for high-recall retrieval,
+     * and streams the augmented response via Flux for real-time delivery.
+     *
+     * @param message The user's message
+     * @param chatId  The chat conversation ID
+     * @return A Flux stream of the AI model's RAG-augmented response content
+     */
+    public Flux<String> chatStreamUsingRAG(String message, String chatId) {
+        String rewrittenMessage = appQueryRewriter.rewriteQuery(message);
+        return chatClient.prompt()
+                .user(rewrittenMessage)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .advisors(
+                        AppRagCustomAdvisorFactory.createAppRagCustomAdvisor(vectorStore, appMultiQueryExpander)
+                )
+                .stream()
+                .content();
     }
 
     /**

@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
@@ -21,7 +23,8 @@ public class AppVectorStoreConfig {
     @Resource
     private AppDocumentKeywordEnricher appDocumentKeywordEnricher;
 
-    // @Bean
+    @Bean
+    @ConditionalOnProperty(name = "rag.initialize-vector-store", havingValue = "true", matchIfMissing = false)
     public SmartInitializingSingleton databaseInitializer(VectorStore vectorStore) {
         return () -> {
             // step 1: Load documents

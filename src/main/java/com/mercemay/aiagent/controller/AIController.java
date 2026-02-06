@@ -102,4 +102,30 @@ public class AIController {
         AIAgent aiAgent = new AIAgent(toolCallbacks, toolCallbackProvider, chatModel);
         return aiAgent.runStream(message);
     }
+
+    /**
+     * Chat with AI using RAG (Retrieval Augmented Generation).
+     * Uses query rewriting and multi-query expansion for high-recall vector retrieval.
+     *
+     * @param message The user's message
+     * @param chatId  The chat conversation ID
+     * @return The AI model's response augmented with relevant document content
+     */
+    @GetMapping("/chat/rag")
+    public String chatRag(String message, String chatId) {
+        return app.chatUsingRAG(message, chatId);
+    }
+
+    /**
+     * Stream chat responses using RAG (Retrieval Augmented Generation).
+     * Combines query rewriting with multi-query expansion and streams the result via SSE.
+     *
+     * @param message The user's message
+     * @param chatId  The chat conversation ID
+     * @return A Flux stream of the AI model's RAG-augmented responses
+     */
+    @GetMapping(value = "/chat/rag/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> chatRagSse(String message, String chatId) {
+        return app.chatStreamUsingRAG(message, chatId);
+    }
 }
